@@ -1,4 +1,4 @@
-# This is my personal version of ProffieOS, based on POS 8.4x Beta from Github Master (February 2026)
+# This is my personal version of ProffieOS, based on POS 8.5x Beta from Github Master (February 2026)
 Changes includes, but not limited to:
 - muliple blade detect code added in: part 1/5 to events.h 2/5 to config, part 3/5 to props,
   part 4/5 to ProffieOS.ino & part 5A/5, 5B/5 & 5C/5 to prop_base.h
