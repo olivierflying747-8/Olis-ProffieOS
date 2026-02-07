@@ -437,6 +437,7 @@ public:
   }
 
   bool IsActive() override { return active_ || delayed_open_; }
+
 protected:
   void wait_for_previous_open_to_complete() {
     while (delayed_open_ && !state_machine_.done()) {
@@ -469,6 +470,7 @@ protected:
   LayerControl* layer_ = nullptr;
   int sound_time_ms_;
   bool active_ = false;
+
 private:
   StateMachineState state_machine_;
 };
@@ -687,5 +689,5 @@ protected:
 //#undef INIT_SCR
 //#undef DEF_SCR
 
-#endif // DISPLAY_LAYER_CONTROLLER_H
+#endif  // DISPLAY_LAYER_CONTROLLER_H
 

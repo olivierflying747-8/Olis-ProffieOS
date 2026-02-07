@@ -1175,6 +1175,7 @@ public:
     0,  // Page start address (0 = reset)
     sizeof(col_t) - 1
   };
+
   void RunLocked() override {
     size_t size;
     if (i < 0) {
@@ -1199,6 +1200,7 @@ public:
     I2CUnlock();
     return;
   }
+
   static void DataSent(void *x, unsigned long event) { ((SSD1306Template*)x)->DataSent(); }
   void DataSent() {
     stm32l4_i2c_notify(Wire._i2c, nullptr, 0, 0);
