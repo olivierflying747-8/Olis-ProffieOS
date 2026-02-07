@@ -1071,7 +1071,7 @@ public:
       Send(COMSCANDEC);
 #endif
 
-      Send(SETCOMPINS);                    // 0xDA
+      Send(SETCOMPINS);                // 0xDA
       if (HEIGHT == 64 || WIDTH==64) {
         Send(0x12);
       } else {
