@@ -1613,6 +1613,7 @@ public:
 #endif
 
 #endif // ENABLE_AUDIO
+
     if (!strcmp(cmd, "cd")) {
       chdir(arg);
       SaberBase::DoNewFont();
