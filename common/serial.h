@@ -48,13 +48,13 @@ public:
     RFID_SERIAL.begin(9600);
   }
 
-#define RFID_READCHAR() do {						\
-  state_machine_.sleep_until_ = millis();				\
-  while (!RFID_SERIAL.available()) {					\
-    if (millis() - state_machine_.sleep_until_ > 200) goto retry;	\
-    YIELD();								\
-  }									\
-  getc();								\
+#define RFID_READCHAR() do {                                       \
+  state_machine_.sleep_until_ = millis();                          \
+  while (!RFID_SERIAL.available()) {                               \
+    if (millis() - state_machine_.sleep_until_ > 200) goto retry;  \
+    YIELD();                                                       \
+  }                                                                \
+  getc();                                                          \
 } while (0)
 
   int c, x;
