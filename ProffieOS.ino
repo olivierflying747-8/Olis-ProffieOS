@@ -27,7 +27,7 @@
 
 // #define CONFIG_FILE "config/YOUR_CONFIG_FILE_NAME_HERE.h"
 
-const char version[] = "Oli experimental. Based on v8.5x Beta Github Master from February 2026";  // Moved by Oli was "around" line n°282 !
+const char version[] = "Oli experimental. Based on v8.7x Beta Github Master from February 2026";  // Moved by Oli was "around" line n°282 !
 
 // #define CONFIG_FILE "config/default_proffieboard_config.h"
 // #define CONFIG_FILE "config/proffieboard_v1_test_bench_config.h"
