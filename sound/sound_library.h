@@ -182,7 +182,7 @@ public:
 #define ADD_SL_SOUND(NAME, BASE)                                                     \
   void Say##NAME() { SOUNDQ->Play(SoundToPlayInSameDirAs(BASE ".wav", &SFX_mnum)); } \
   /* t for "trampoline" */                                                           \
-  struct t##NAME { static void say() { SOUNDQ->Play(SoundToPlayInSameDirAs(BASE ".wav", &SFX_mnum)); } }
+  struct t##NAME { static void say() { SOUNDQ->Play(SoundToPlayInSameDirAs(BASE, &SFX_mnum)); } }
 
 #endif
 
