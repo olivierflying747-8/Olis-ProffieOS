@@ -48,13 +48,13 @@ public:
     RFID_SERIAL.begin(9600);
   }
 
-#define RFID_READCHAR() do {						\
-  state_machine_.sleep_until_ = millis();				\
-  while (!RFID_SERIAL.available()) {					\
-    if (millis() - state_machine_.sleep_until_ > 200) goto retry;	\
-    YIELD();								\
-  }									\
-  getc();								\
+#define RFID_READCHAR() do {                                       \
+  state_machine_.sleep_until_ = millis();                          \
+  while (!RFID_SERIAL.available()) {                               \
+    if (millis() - state_machine_.sleep_until_ > 200) goto retry;  \
+    YIELD();                                                       \
+  }                                                                \
+  getc();                                                          \
 } while (0)
 
   int c, x;
@@ -132,9 +132,18 @@ public:
     while (true) {
       while (!SA::Connected()) YIELD();
       if (!SA::AlwaysConnected()) {
-        STDOUT << "Welcome to ProffieOS " << version << "\n";
+        STDOUT << "********* Hello there! Welcome to ProffieOS **********\n";           // added by Oli
+        STDOUT << version <<"\n";                                                       // added by Oli
+      //STDOUT << "Welcome to ProffieOS " << version << "\n";                           // was the original
         STDOUT << "For available serial commands, see:\n";
-        STDOUT << "https://pod.hubbe.net/tools/serial-monitor-commands.html\n";	
+        STDOUT << "https://pod.hubbe.net/tools/serial-monitor-commands.html\n";
+        STDOUT <<                                                                       // added by Oli
+        "\nBOOT Volume: " TOSTRING(BOOT_VOLUME)                                         // added by Oli
+        "\nConfig MAX Volume: " TOSTRING(VOLUME)                                        // added by Oli
+        "\n" CONFIG_FILE                                                                // added by Oli
+        "\nprop: "  TOSTRING(PROP_TYPE)                                                 // added by Oli
+        "\nbuttons: " TOSTRING(NUM_BUTTONS)                                             // added by Oli
+        "\ninstalled: " << install_time << "\n";                                        // added by Oli
       }
 
       while (SA::Connected()) {

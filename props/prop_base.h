@@ -67,6 +67,10 @@ public:
 #endif
 };
 
+#ifndef IGNORE_CLASH_DURATION                                        // added by Oli
+#define IGNORE_CLASH_DURATION 300                                    // added by Oli
+#endif                                                               // added by Oli
+
 // Base class for props.
 class PropBase : CommandParser, protected Looper, protected SaberBase, public ModeInterface {
 public:
@@ -253,6 +257,7 @@ public:
 
   virtual bool chdir(const StringPiece dir) {
     if (dir.len > 1 && dir[dir.len-1] == '/') {
+      //PVLOG_ERROR << "Directory must not end with slash.\n";
       STDOUT.println("Directory must not end with slash.");
       return false;
     }
@@ -295,13 +300,13 @@ public:
       if (SFX_lswing) {
         smooth_swing_cfx_config.ReadInCurrentDir("font_config.txt");
         // map CFX values to Proffie (sourced from font_config.txt in font folder)
-        smooth_swing_config.SwingSensitivity = smooth_swing_cfx_config.smooth_sens;
-        smooth_swing_config.MaximumHumDucking = smooth_swing_cfx_config.smooth_dampen;
-        smooth_swing_config.SwingSharpness = smooth_swing_cfx_config.smooth_sharp;
-        smooth_swing_config.SwingStrengthThreshold = smooth_swing_cfx_config.smooth_gate;
-        smooth_swing_config.Transition1Degrees = smooth_swing_cfx_config.smooth_width1;
-        smooth_swing_config.Transition2Degrees = smooth_swing_cfx_config.smooth_width2;
-        smooth_swing_config.MaxSwingVolume = smooth_swing_cfx_config.smooth_gain * 3 / 100;
+        smooth_swing_config.SwingSensitivity          = smooth_swing_cfx_config.smooth_sens;
+        smooth_swing_config.MaximumHumDucking         = smooth_swing_cfx_config.smooth_dampen;
+        smooth_swing_config.SwingSharpness            = smooth_swing_cfx_config.smooth_sharp;
+        smooth_swing_config.SwingStrengthThreshold    = smooth_swing_cfx_config.smooth_gate;
+        smooth_swing_config.Transition1Degrees        = smooth_swing_cfx_config.smooth_width1;
+        smooth_swing_config.Transition2Degrees        = smooth_swing_cfx_config.smooth_width2;
+        smooth_swing_config.MaxSwingVolume            = smooth_swing_cfx_config.smooth_gain * 3 / 100;
         smooth_swing_config.AccentSwingSpeedThreshold = smooth_swing_cfx_config.hswing;
         smooth_swing_config.Version = 2;
       } else if (!SFX_swingl) {
@@ -519,6 +524,18 @@ public:
   bool blade_detected_ = false;
 #endif
 
+/* For multiple blade detect part 5A/5                                                            // added by Oli
+(Need to add part 1/5 to events.h 2/5 to config, part 3A/5 & 3B/5 to props,                       // added by Oli
+ part 4/5 to to ProffieOS.ino,part 5A/5, 5B/5 & 5C/5 to prop_base.h) */                           // added by Oli
+                                                                                                  // added by Oli
+#ifdef BLADE_DETECT_PIN2                                                                          // added by Oli
+  bool blade2_detected_ = false;                                                                  // added by Oli
+#endif                                                                                            // added by Oli
+                                                                                                  // added by Oli
+#ifdef BLADE_DETECT_PIN3                                                                          // added by Oli
+  bool blade3_detected_ = false;                                                                  // added by Oli
+#endif                                                                                            // added by Oli
+
   // Use this helper function, not the bool above.
   // This function changes when we're properly initialized
   // the blade, the bool is an internal to blade detect.
@@ -527,9 +544,9 @@ public:
   }
 
   virtual void SpeakBladeID(float id) {
-#ifdef DISABLE_TALKIE
+#if defined(DISABLE_TALKIE) || defined(KEEP_MINIMUM_TALKIE_ONLY)     // changed by Oli (was #ifdef DISABLE_TALKIE)
 #ifdef SPEAK_BLADE_ID
-#error You cannot define both DISABLE_TALKIE and SPEAK_BLADE_ID
+#error You cannot define both DISABLE_TALKIE (or KEEP_MINIMUM_TALKIE_ONLY) and SPEAK_BLADE_ID // (or KEEP_MINIMUM_TALKIE_ONLY) added by Oli
 #endif
 #else
     talkie.Say(spI);
@@ -552,12 +569,35 @@ public:
 #endif // SPEAK_BLADE_ID
     }
 #ifdef BLADE_DETECT_PIN
+    PVLOG_STATUS << "***** Primary Main Blade #1 ";                           // added by Oli
     if (!blade_detected_) {
-      PVLOG_STATUS << "NO ";
+      PVLOG_STATUS << "NOT ";      // was PVLOG_STATUS << "NO "               // changed by Oli
       ret += NO_BLADE;
     }
-    PVLOG_STATUS << "Blade Detected\n";
+    PVLOG_STATUS << "Detected\n";  // was PVLOG_STATUS << "Blade Detected\n"; // changed by Oli
 #endif
+
+/* For multiple blade detect part 5B/5                                        // added by Oli
+(Need to add part 1/5 to events.h 2/5 to config, part 3A/5 & 3B/5 to props,   // added by Oli
+ part 4/5 to to ProffieOS.ino,part 5A/5, 5B/5 & 5C/5 to prop_base.h) */       // added by Oli
+                                                                              // added by Oli
+#ifdef BLADE_DETECT_PIN2                                                      // added by Oli
+    PVLOG_STATUS << "***** Secondary Main Blade #2 ";                         // added by Oli
+    if (!blade2_detected_) {                                                  // added by Oli
+      PVLOG_STATUS << "NOT ";                                                 // added by Oli
+    //ret += NO_BLADE; // Commented out, because I don't want to add another NO_BLADE! added by Oli
+    }                                                                         // added by Oli
+    PVLOG_STATUS << "Detected\n";                                             // added by Oli
+#endif                                                                        // added by Oli
+                                                                              // added by Oli
+#ifdef BLADE_DETECT_PIN3                                                      // added by Oli
+    PVLOG_STATUS << "***** Cross-Guard Blade #3 ";                            // added by Oli
+    if (!blade3_detected_) {                                                  // added by Oli
+      PVLOG_STATUS << "NOT ";                                                 // added by Oli
+    //ret += NO_BLADE; // Commented out, because I don't want to add another NO_BLADE! added by Oli
+    }                                                                         // added by Oli
+    PVLOG_STATUS << "Detected\n";                                             // added by Oli
+#endif                                                                        // added by Oli
       return ret;
   }
 
@@ -879,18 +919,10 @@ public:
     if (monitor.IsMonitoring(Monitoring::MonitorStrokes)) {
       STDOUT.print("Stroke: ");
       switch (strokes[NELEM(strokes)-1].type) {
-        case TWIST_LEFT:
-          STDOUT.print("TwistLeft");
-          break;
-        case TWIST_RIGHT:
-          STDOUT.print("TwistRight");
-          break;
-        case SHAKE_FWD:
-          STDOUT.print("Thrust");
-          break;
-        case SHAKE_REW:
-          STDOUT.print("Yank");
-          break;
+        case TWIST_LEFT:    STDOUT.print("TwistLeft");    break;
+        case TWIST_RIGHT:   STDOUT.print("TwistRight");   break;
+        case SHAKE_FWD:     STDOUT.print("Thrust");       break;
+        case SHAKE_REW:     STDOUT.print("Yank");         break;
         default: break;
       }
       STDOUT << " len = " << strokes[NELEM(strokes)-1].length();
@@ -1131,7 +1163,6 @@ public:
   volatile bool clash_pending1_ = false;
   volatile bool pending_clash_is_stab1_ = false;
   volatile float pending_clash_strength1_ = 0.0;
-
   uint32_t last_beep_;
   float current_tick_angle_ = 0.0;
 
@@ -1221,16 +1252,35 @@ public:
 #endif  // DISABLE_COLOR_CHANGE
 
   virtual void PrintButton(uint32_t b) {
-    if (b & BUTTON_POWER) STDOUT.print("Power");
-    if (b & BUTTON_AUX) STDOUT.print("Aux");
-    if (b & BUTTON_AUX2) STDOUT.print("Aux2");
-    if (b & BUTTON_UP) STDOUT.print("Up");
-    if (b & BUTTON_DOWN) STDOUT.print("Down");
-    if (b & BUTTON_LEFT) STDOUT.print("Left");
-    if (b & BUTTON_RIGHT) STDOUT.print("Right");
-    if (b & BUTTON_SELECT) STDOUT.print("Select");
-    if (b & BUTTON_BLADE_DETECT) STDOUT.print("BladeDetect");
-    if (b & MODE_ON) STDOUT.print("On");
+    if (b & BUTTON_POWER)             STDOUT.print("Power");
+    if (b & BUTTON_AUX)               STDOUT.print("Aux");
+    if (b & BUTTON_AUX2)              STDOUT.print("Aux2");
+    if (b & BUTTON_UP)                STDOUT.print("Up");
+    if (b & BUTTON_DOWN)              STDOUT.print("Down");
+    if (b & BUTTON_LEFT)              STDOUT.print("Left");
+    if (b & BUTTON_RIGHT)             STDOUT.print("Right");
+    if (b & BUTTON_SELECT)            STDOUT.print("Select");
+#ifdef BLADE_DETECT_PIN                                                     // added by Oli
+    if (b & BUTTON_BLADE_DETECT)      STDOUT.print("BladeDetect1");         // changed by Oli
+#endif                                                                      // added by Oli
+/* For multiple blade detect part 5C/5                                      // added by Oli
+(Need to add part 1/5 to events.h 2/5 to config, part 3A/5 & 3B/5 to props, // added by Oli
+ part 4/5 to to ProffieOS.ino,part 5A/5, 5B/5 & 5C/5 to prop_base.h) */     // added by Oli
+                                                                            // added by Oli
+#ifdef BLADE_DETECT_PIN2                                                    // added by Oli
+    if (b & BUTTON_BLADE_DETECT2)     STDOUT.print("BladeDetect2");         // added by Oli
+#endif                                                                      // added by Oli
+#ifdef BLADE_DETECT_PIN2                                                    // added by Oli
+    if (b & BUTTON_BLADE_DETECT3)     STDOUT.print("BladeDetect3");         // added by Oli
+#endif                                                                      // added by Oli
+    if (b & MODE_ON)                  STDOUT.print("On");
+/* do not add, those buttons have the same values as some other buttons.    // added by Oli
+    // but maybe with an #ifndef BLASTER_H ???                              // added by Oli
+    if (b & BUTTON_RELOAD)            STDOUT.print("Reload");               // added by Oli
+    if (b & BUTTON_FIRE)              STDOUT.print("Fire");                 // added by Oli
+    if (b & BUTTON_MODE_SELECT)       STDOUT.print("ModeSelect");           // added by Oli
+    if (b & BUTTON_CLIP_DETECT)       STDOUT.print("ClipDetect");           // added by Oli
+*/                                                                          // added by Oli
   }
 
   void PrintEvent(uint32_t e) {
@@ -1241,27 +1291,28 @@ public:
       e -= (EVENT_SECOND_PRESSED - EVENT_FIRST_PRESSED) * cnt;
     }
     switch (e) {
-      case EVENT_NONE: STDOUT.print("None"); break;
-      case EVENT_PRESSED: STDOUT.print("Pressed"); break;
-      case EVENT_RELEASED: STDOUT.print("Released"); break;
-      case EVENT_HELD: STDOUT.print("Held"); break;
-      case EVENT_HELD_MEDIUM: STDOUT.print("HeldMedium"); break;
-      case EVENT_HELD_LONG: STDOUT.print("HeldLong"); break;
-      case EVENT_CLICK_SHORT: STDOUT.print("Shortclick"); break;
-      case EVENT_CLICK_LONG: STDOUT.print("Longclick"); break;
-      case EVENT_SAVED_CLICK_SHORT: STDOUT.print("SavedShortclick"); break;
-      case EVENT_LATCH_ON: STDOUT.print("On"); break;
-      case EVENT_LATCH_OFF: STDOUT.print("Off"); break;
-      case EVENT_STAB: STDOUT.print("Stab"); break;
-      case EVENT_SWING: STDOUT.print("Swing"); break;
-      case EVENT_SHAKE: STDOUT.print("Shake"); break;
-      case EVENT_TWIST: STDOUT.print("Twist"); break;
-      case EVENT_TWIST_LEFT: STDOUT.print("TwistLeft"); break;
-      case EVENT_TWIST_RIGHT: STDOUT.print("TwistRight"); break;
-      case EVENT_CLASH: STDOUT.print("Clash"); break;
-      case EVENT_THRUST: STDOUT.print("Thrust"); break;
-      case EVENT_PUSH: STDOUT.print("Push"); break;
-      default: STDOUT.print("?"); STDOUT.print(e); break;
+      case EVENT_NONE:                      STDOUT.print("None");                 break;
+      case EVENT_PRESSED:                   STDOUT.print("Pressed");              break;
+      case EVENT_RELEASED:                  STDOUT.print("Released");             break;
+      case EVENT_HELD:                      STDOUT.print("Held");                 break;
+      case EVENT_HELD_MEDIUM:               STDOUT.print("HeldMedium");           break;
+      case EVENT_HELD_LONG:                 STDOUT.print("HeldLong");             break;
+      case MULTI_PROP_EVENT_HELD_XTRA_LONG: STDOUT.print("HeldXtraLong");         break; // added by Oli
+      case EVENT_CLICK_SHORT:               STDOUT.print("Shortclick");           break;
+      case EVENT_CLICK_LONG:                STDOUT.print("Longclick");            break;
+      case EVENT_SAVED_CLICK_SHORT:         STDOUT.print("SavedShortclick");      break;
+      case EVENT_LATCH_ON:                  STDOUT.print("On");                   break;
+      case EVENT_LATCH_OFF:                 STDOUT.print("Off");                  break;
+      case EVENT_STAB:                      STDOUT.print("Stab");                 break;
+      case EVENT_SWING:                     STDOUT.print("Swing");                break;
+      case EVENT_SHAKE:                     STDOUT.print("Shake");                break;
+      case EVENT_TWIST:                     STDOUT.print("Twist");                break;
+      case EVENT_TWIST_LEFT:                STDOUT.print("TwistLeft");            break;
+      case EVENT_TWIST_RIGHT:               STDOUT.print("TwistRight");           break;
+      case EVENT_CLASH:                     STDOUT.print("Clash");                break;
+      case EVENT_THRUST:                    STDOUT.print("Thrust");               break;
+      case EVENT_PUSH:                      STDOUT.print("Push");                 break;
+      default: STDOUT.print("?");           STDOUT.print(e);                      break;
     }
     if (cnt) {
       STDOUT.print('#');
@@ -1614,12 +1665,12 @@ public:
     }
 
     if (!strcmp(cmd, "n") || (!strcmp(cmd, "next") && arg && (!strcmp(arg, "preset") || !strcmp(arg, "pre")))) {
-      next_preset();
+      SaberBase::IsOn() ? next_preset_fast() : next_preset();            // Proposed changed by NoSloppy
       return true;
     }
 
     if (!strcmp(cmd, "p") || (!strcmp(cmd, "prev") && arg && (!strcmp(arg, "preset") || !strcmp(arg, "pre")))) {
-      previous_preset();
+      SaberBase::IsOn() ? previous_preset_fast() : previous_preset();    // Proposed changed by NoSloppy
       return true;
     }
 
@@ -1627,7 +1678,6 @@ public:
       rotate_presets();
       return true;
     }
-
     if (!strcmp(cmd, "list_presets")) {
       CurrentPreset tmp;
       for (int i = 0; ; i++) {
@@ -1637,19 +1687,16 @@ public:
       }
       return true;
     }
-
     if (!strcmp(cmd, "set_font") && arg) {
       current_preset_.font = mkstr(arg);
       current_preset_.Save();
       return true;
     }
-
     if (!strcmp(cmd, "set_track") && arg) {
       current_preset_.track = mkstr(arg);
       current_preset_.Save();
       return true;
     }
-
     if (!strcmp(cmd, "set_name") && arg) {
       current_preset_.name = mkstr(arg);
       current_preset_.Save();
@@ -1670,19 +1717,16 @@ public:
       current_preset_.SaveAt(pos);
       return true;
     }
-
     if (!strcmp(cmd, "duplicate_preset") && arg) {
       int32_t pos = strtol(arg, NULL, 0);
       current_preset_.preset_num = -1;
       current_preset_.SaveAt(pos);
       return true;
     }
-
     if (!strcmp(cmd, "delete_preset")) {
       current_preset_.SaveAt(-1);
       return true;
     }
-
     if (!strcmp(cmd, "show_current_preset")) {
       current_preset_.Print();
       return true;
@@ -1795,14 +1839,12 @@ public:
       if (!SetMute(true)) SetMute(false);
       return true;
     }
-
     if (!strcmp(cmd, "set_preset") && arg) {
       int preset = strtol(arg, NULL, 0);
       SaveState(preset);
       SetPreset(preset, true);
       return true;
     }
-
     if (!strcmp(cmd, "change_preset") && arg) {
       int preset = strtol(arg, NULL, 0);
       if (preset != current_preset_.preset_num) {
@@ -1844,7 +1886,6 @@ public:
       LOCK_SD(false);
       return true;
     }
-
     if (!strcmp(cmd, "list_fonts")) {
       LOCK_SD(true);
       for (LSFS::Iterator iter("/"); iter; ++iter) {
@@ -1884,11 +1925,11 @@ public:
         clash_pending_ = false;
         [[gnu::fallthrough]];
       case EVENT_PRESSED:
+        //IgnoreClash(IGNORE_CLASH_DURATION / 6);                                     // mod by Oli was (50)
         IgnoreClash(50); // ignore clashes to prevent buttons from causing clashes
       default:
         break;
     }
-
     if (current_mode->mode_Event2(button, event, current_modifiers | (IsOn() ? MODE_ON : MODE_OFF))) {
       current_modifiers = 0;
       return true;
@@ -1961,7 +2002,10 @@ private:
 
     // Avoid clashes a little bit while turning on.
     // It might be a "clicky" power button...
-    IgnoreClash(300);
+#ifndef IGNORE_CLASH_DURATION                                        // added by Oli
+#define IGNORE_CLASH_DURATION 300                                    // added by Oli
+#endif                                                               // added by Oli
+    IgnoreClash(IGNORE_CLASH_DURATION);                              // mod by Oli was (300)
     return true;
   }
 

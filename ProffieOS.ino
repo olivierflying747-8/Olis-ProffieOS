@@ -27,6 +27,8 @@
 
 // #define CONFIG_FILE "config/YOUR_CONFIG_FILE_NAME_HERE.h"
 
+const char version[] = "Oli experimental. Based on v8.7x Beta Github Master from February 2026";  // Moved by Oli was "around" line n°282 !
+
 // #define CONFIG_FILE "config/default_proffieboard_config.h"
 // #define CONFIG_FILE "config/proffieboard_v1_test_bench_config.h"
 // #define CONFIG_FILE "config/proffieboard_v2_testing_config.h"
@@ -267,7 +269,7 @@ SnoozeTouch snooze_touch;
 SnoozeBlock snooze_config(snooze_touch, snooze_digital, snooze_timer);
 #endif
 
-const char version[] = "$Id: ce12a06a1e236b5101ec60c950530a9a4719a74d $";
+//const char version[] = "$Id: ce12a06a1e236b5101ec60c950530a9a4719a74d $";
 
 #include "common/common.h"
 #include "common/state_machine.h"
@@ -795,10 +797,28 @@ uint32_t startup_MODER[4];
 
 #ifdef BLADE_DETECT_PIN
 LatchingButtonTemplate<FloatingButtonBase<BLADE_DETECT_PIN>>
-  BladeDetect(BUTTON_BLADE_DETECT, BLADE_DETECT_PIN, "blade_detect");
+  BladeDetect(BUTTON_BLADE_DETECT, BLADE_DETECT_PIN, "blade_detect1");
 
 USE_PIN_OUTPUT(BLADE_DETECT_PIN, PO_SubSystems::PO_BLADE_DETECT);
 #endif
+
+/* For multiple blade detect part 4/5                                         // added by Oli
+(Need to add part 1/5 to events.h 2/5 to config, part 3A/5 & 3B/5 to props,   // added by Oli
+ part 4/5 to to ProffieOS.ino,part 5A/5, 5B/5 & 5C/5 to prop_base.h) */       // added by Oli
+                                                                              // added by Oli
+#ifdef BLADE_DETECT_PIN2                                                      // added by Oli
+LatchingButtonTemplate<FloatingButtonBase<BLADE_DETECT_PIN2>>                 // added by Oli
+  BladeDetect2(BUTTON_BLADE_DETECT2, BLADE_DETECT_PIN2, "blade_detect2");     // added by Oli
+                                                                              // added by Oli
+USE_PIN_OUTPUT(BLADE_DETECT_PIN2, PO_SubSystems::PO_BLADE_DETECT);            // added by Oli
+#endif                                                                        // added by Oli
+                                                                              // added by Oli
+#ifdef BLADE_DETECT_PIN3                                                      // added by Oli
+LatchingButtonTemplate<FloatingButtonBase<BLADE_DETECT_PIN3>>                 // added by Oli
+  BladeDetect3(BUTTON_BLADE_DETECT3, BLADE_DETECT_PIN3, "blade_detect3");     // added by Oli
+                                                                              // added by Oli
+USE_PIN_OUTPUT(BLADE_DETECT_PIN3, PO_SubSystems::PO_BLADE_DETECT);            // added by Oli
+#endif                                                                        // added by Oli
 
 #include "common/sd_test.h"
 
@@ -1080,7 +1100,7 @@ public:
       return true;
     }
 #endif  // ENABLE_DEVELOPER_COMMANDS
-#endif
+#endif  // ENABLE_AUDIO
 
 #ifdef ENABLE_DEVELOPER_COMMANDS
     if (!strcmp(cmd, "sleep") && e) {
@@ -1667,7 +1687,7 @@ void setup() {
   } else {
     STDOUT.println("Sdcard found..");
   }
-#endif
+#endif  // ENABLE_SD
 
   Looper::DoSetup();
   PVLOG_DEBUG << "***************** Booting up! *******************\n";
