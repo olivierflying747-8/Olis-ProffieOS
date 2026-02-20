@@ -317,7 +317,7 @@ public:
     }
     switch (smooth_swing_config.Version) {
       case 1:
-        looped_swing_wrapper.Activate(&hybrid_font);
+	looped_swing_wrapper.Activate(&hybrid_font);
 	break;
       case 2:
 	smooth_swing_v2.Activate(&hybrid_font);
