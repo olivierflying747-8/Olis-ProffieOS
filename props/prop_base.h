@@ -289,7 +289,6 @@ public:
     *(b++) = 0;
     *(b++) = 0;
 
-    Effect::ScanCurrentDirectory();
     ResetCurrentAlternative();
 #ifdef ENABLE_AUDIO
     hybrid_font.Activate1();
